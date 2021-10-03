@@ -1,0 +1,43 @@
+.widget_parent {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.ce__widget_container {
+  position: relative;
+  padding: 25px;
+  text-align: left;
+}
+
+.ce__comment_box {
+  border: 1px solid grey;
+  padding: 15px;
+  border-radius: 5px;
+  line-height: 1.5em;
+}
+
+.ce__suggestion_box {
+  position: absolute;
+  max-height: 200px;
+  overflow: scroll;
+  padding: 5px;
+  left: 50px;
+  bottom: 50px;
+  background: whitesmoke;
+  border-radius: 5px;
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 1px 4px;
+}
+
+.ce__suggested_user {
+  padding: 5px;
+  cursor: pointer;
+  color: blue;
+}
+
+a.suggest {
+  text-decoration: none;
+  cursor: pointer;
+  /* color: blue; */
+}
