@@ -1,7 +1,7 @@
-import { Route, Switch, BrowserRouter } from "react-router-dom";
+import { Route, Switch, BrowserRouter } from 'react-router-dom';
 
-import { Home } from "./Home";
-import { ContentEditable } from "./widget/ContentEditable";
+import { Home } from './Home';
+import { ContentEditable } from './widget/ContentEditable';
 
 export const Routes = () => {
   return (

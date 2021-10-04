@@ -1,69 +1,71 @@
 /* eslint-disable no-unused-vars */
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback } from 'react';
+import { useLoggingReducer } from '../helpers/useLoggingReducer';
 
-import "./ContentEditable.css";
-import { getUsers, getCaretCoordinates } from "./helpers";
+import './ContentEditable.css';
+import {
+  getUsers,
+  getCaretCoordinates,
+  getCaretHTMLIndex,
+  convertNodesToString,
+} from './helpers';
+import {
+  CEReducer,
+  initCEState,
+  SET_AVAILABLE_USERS,
+  SET_COMMENT,
+  INCREMENT_MENTION_LENGTH,
+  SET_MENTION_START,
+  SET_SHOWING_SUGGESTIONS,
+  SET_SUGGESTED_USERS,
+  RESET_MENTIONING,
+} from './reducer';
 
-const webLink = "https://web.hypothes.is/";
+const webLink = 'https://web.hypothes.is/';
 
+const useCaretIndex = (element) => getCaretHTMLIndex(element);
 const useCaretCoordinates = () => getCaretCoordinates();
 
+const regex = /(\s|&nbsp;)@([a-zA-Z]+)(\s|&nbsp;|)/;
+
 export const ContentEditable = () => {
-  const divRef = useRef();
-
-  const [userList, setUsers] = useState([]);
-  const [comment, setComment] = useState("");
-
-  const [suggestedUsers, setSuggestedUsers] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-
-  console.log("comment", comment);
-  console.log("divRef", divRef.current);
-
-  const onTextChange = (value, props) => {
-    const lastChar = this.state.messageText.substr(
-      this.state.messageText.length - 1
-    );
-    const currentChar = value.substr(value.length - 1);
-    const spaceCheck = /[^@A-Za-z_]/g;
-    props.onTextChanged(value);
-    this.setState({
-      messageText: value,
-    });
-    if (value.length === 0) {
-      this.setModalVisible(false);
-    } else {
-      if (spaceCheck.test(lastChar) && currentChar !== "@") {
-        this.setModalVisible(false);
-      } else {
-        const checkSpecialChar = currentChar.match(/[^@A-Za-z_]/);
-        if (checkSpecialChar === null || currentChar === "@") {
-          const pattern = new RegExp(`\\B@[a-z0-9_-]+|\\B@`, `gi`);
-          const matches = value.match(pattern) || [];
-          if (matches.length > 0) {
-            this.getUserSuggestions(matches[matches.length - 1]);
-            this.setModalVisible(true);
-          } else {
-            this.setModalVisible(false);
-          }
-        } else if (checkSpecialChar != null) {
-          this.setModalVisible(false);
-        }
-      }
-    }
-  };
+  const editableDiv = useRef();
 
   const { caretX, caretY } = useCaretCoordinates();
-  console.log({ caretX, caretY });
+  const { caretPosition } = useCaretIndex(editableDiv.current);
+
+  const [info, dispatch] = useLoggingReducer(CEReducer, initCEState);
+  console.log(info);
+
+  const resetMentions = () => dispatch({ type: RESET_MENTIONING });
+
+  const setMentionStart = (payload) =>
+    dispatch({ type: SET_MENTION_START, payload });
+
+  const incrementMentionLength = () =>
+    dispatch({ type: INCREMENT_MENTION_LENGTH });
+
+  const updateSuggestions = (payload) =>
+    dispatch({ type: SET_SUGGESTED_USERS, payload });
+
+  const updateComment = (comment) =>
+    dispatch({ type: SET_COMMENT, payload: comment });
+
+  const startSuggestions = () =>
+    dispatch({ type: SET_SHOWING_SUGGESTIONS, payload: true });
+
+  console.log({ caretPosition });
+  // console.log({ caretX, caretY });
 
   const getSuggestion = useCallback(
     (query) => {
-      let matchingUsers = userList;
+      let matchingUsers = info.availableUsers;
+      console.log('QUERY', query);
 
-      if (query === "") {
-        // setSuggestedUsers(userList);
+      if (query === '') {
+        // updateSuggestions(info.availableUsers);
       } else {
-        matchingUsers = userList.filter((user) => {
+        matchingUsers = info.availableUsers.filter((user) => {
           const queryLower = query.toLowerCase();
           const nameMatch = user.name.toLowerCase().includes(queryLower);
           const usernameMatch = user.username
@@ -73,18 +75,60 @@ export const ContentEditable = () => {
           return nameMatch || usernameMatch;
         });
       }
-
-      setSuggestedUsers(matchingUsers);
+      console.log('MATCHIN', matchingUsers.length);
+      updateSuggestions(matchingUsers);
     },
-    [userList]
+
+    [info.availableUsers]
+  );
+
+  const handleKeyUp = useCallback(
+    (e) => {
+      console.log('KEYUPCOUNT');
+      const keyCode = e.nativeEvent.code;
+      // console.log('KEYBOARDEVENT', e.nativeEvent);
+
+      const t = e.target.innerHTML;
+      updateComment(t);
+
+      if (keyCode === 'Backspace') {
+        //
+      }
+
+      if (info.showSuggestions) {
+        const ns = convertNodesToString(editableDiv.current);
+        console.log('ns', ns);
+
+        const findSymbol = ns.match(regex);
+        console.log('finder', findSymbol);
+
+        // console.log('SHOWING SUGGESTIONS ACTIVE');
+
+        if (keyCode === 'Space') {
+          resetMentions();
+        } else {
+          const searchStr = findSymbol ? findSymbol[2] : '';
+          getSuggestion(searchStr);
+          incrementMentionLength();
+        }
+      }
+
+      if (e.shiftKey && keyCode === 'Digit2') {
+        getSuggestion('');
+        startSuggestions();
+        incrementMentionLength();
+        setMentionStart(caretPosition);
+      }
+      return;
+    },
+    [getSuggestion, caretPosition]
   );
 
   useEffect(() => {
     getUsers().then((users) => {
-      setUsers(users);
-      setSuggestedUsers(users);
+      dispatch({ type: SET_AVAILABLE_USERS, payload: users });
     });
-  });
+  }, []);
 
   return (
     <div className="widget_parent">
@@ -93,57 +137,53 @@ export const ContentEditable = () => {
       </div>
 
       <div className="ce__widget_container">
-        {showSuggestions && (
-          <div
-            id="suggestionBox"
-            className="ce__suggestion_box"
-            style={{
-              left: caretX === 0 ? "60px" : `${caretX + 20}px`,
-              bottom: caretY === 0 ? "50px" : `calc(${caretY}px - 85vh)`,
-            }}
-          >
-            {suggestedUsers.map((user, idx) => {
-              return (
-                <div
-                  key={idx}
-                  className="ce__suggested_user"
-                  onClick={() => {
-                    const markup = `<a class="suggest" href="${webLink}" onClick={window.open(${webLink})}>@${user.username}</a>`;
-                    console.log(markup);
+        <div
+          id="suggestionBox"
+          className="ce__suggestion_box"
+          style={{
+            display: info.showSuggestions ? 'block' : 'none',
+            left: caretX === 0 ? '60px' : `${caretX + 20}px`,
+            bottom: caretY === 0 ? '50px' : `calc(${caretY}px - 85vh)`,
+          }}
+        >
+          {info.suggestedUsers.map((user, idx) => {
+            return (
+              <div
+                key={idx}
+                className="ce__suggested_user"
+                onClick={() => {
+                  const markup = `<a class="suggest" href="${webLink}">@${user.username}</a>`;
+                  // console.log(markup);
 
-                    const existingContent = divRef.current.innerHTML;
-                    console.log("existingText", existingContent);
+                  const existing = editableDiv.current.innerHTML;
 
-                    const updatedContent = existingContent + markup;
+                  const afterCaret = existing.slice(
+                    info.mentionStart + info.mentionLength
+                  );
+                  const beforeCaret = existing.slice(0, info.mentionStart);
 
-                    divRef.current.innerHTML = updatedContent;
-                    setComment(updatedContent);
-                  }}
-                >
-                  {user.name}
-                </div>
-              );
-            })}
-          </div>
-        )}
+                  const finalHTML = beforeCaret + markup + afterCaret;
+
+                  console.log({ beforeCaret, afterCaret, finalHTML });
+
+                  editableDiv.current.innerHTML = finalHTML;
+                  updateComment(finalHTML);
+                  console.log('finalHTML', finalHTML);
+                  resetMentions();
+                }}
+              >
+                {user.name} ({user.username})
+              </div>
+            );
+          })}
+        </div>
 
         <div
-          ref={divRef}
+          ref={editableDiv}
           contentEditable
+          id="editableDiv"
           className="ce__comment_box"
-          onKeyDown={(e) => {
-            // console.log("KEYBOARDEVENT", e);
-
-            if (e.shiftKey && e.nativeEvent.code === "Digit2") {
-              getSuggestion("");
-              setShowSuggestions(true);
-            }
-          }}
-          onInput={(e) => {
-            console.log(e.target.innerText);
-            setComment(e.target.innerHTML);
-          }}
-          // dangerouslySetInnerHTML={{ __html: `<a class='suggest' href='https://google.com'>@chidi</a> who are u` }}
+          onKeyUp={handleKeyUp}
         ></div>
       </div>
     </div>
