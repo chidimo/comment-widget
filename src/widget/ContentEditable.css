@@ -5,6 +5,20 @@
   justify-content: space-between;
 }
 
+.comments_viewer {
+  padding: 0 15px;
+}
+
+.ce__single_comment {
+  padding: 7px;
+  text-align: left;
+  word-break: break-all;
+}
+
+.ce__single_comment:not(:last-of-type) {
+  border-bottom: 1px solid gray;
+}
+
 .ce__widget_container {
   position: relative;
   padding: 25px;

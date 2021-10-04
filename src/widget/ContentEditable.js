@@ -1,3 +1,5 @@
+/* eslint-disable array-bracket-spacing */
+/* eslint-disable no-console */
 /* eslint-disable no-unused-vars */
 import { useRef, useEffect, useCallback } from 'react';
 import { useLoggingReducer } from '../helpers/useLoggingReducer';
@@ -12,10 +14,9 @@ import {
 import {
   CEReducer,
   initCEState,
-  SET_AVAILABLE_USERS,
+  INITIALIZE_USERS,
   SET_COMMENT,
-  INCREMENT_MENTION_LENGTH,
-  SET_MENTION_START,
+  SAVE_COMMENT,
   SET_SHOWING_SUGGESTIONS,
   SET_SUGGESTED_USERS,
   RESET_MENTIONING,
@@ -23,7 +24,6 @@ import {
 
 const webLink = 'https://web.hypothes.is/';
 
-const useCaretIndex = (element) => getCaretHTMLIndex(element);
 const useCaretCoordinates = () => getCaretCoordinates();
 
 const regex = /(\s|&nbsp;)@([a-zA-Z]+)(\s|&nbsp;|)/;
@@ -32,30 +32,10 @@ export const ContentEditable = () => {
   const editableDiv = useRef();
 
   const { caretX, caretY } = useCaretCoordinates();
-  const { caretPosition } = useCaretIndex(editableDiv.current);
-
   const [info, dispatch] = useLoggingReducer(CEReducer, initCEState);
+
   console.log(info);
-
-  const resetMentions = () => dispatch({ type: RESET_MENTIONING });
-
-  const setMentionStart = (payload) =>
-    dispatch({ type: SET_MENTION_START, payload });
-
-  const incrementMentionLength = () =>
-    dispatch({ type: INCREMENT_MENTION_LENGTH });
-
-  const updateSuggestions = (payload) =>
-    dispatch({ type: SET_SUGGESTED_USERS, payload });
-
-  const updateComment = (comment) =>
-    dispatch({ type: SET_COMMENT, payload: comment });
-
-  const startSuggestions = () =>
-    dispatch({ type: SET_SHOWING_SUGGESTIONS, payload: true });
-
-  console.log({ caretPosition });
-  // console.log({ caretX, caretY });
+  console.log(editableDiv?.current?.innerHTML);
 
   const getSuggestion = useCallback(
     (query) => {
@@ -76,64 +56,101 @@ export const ContentEditable = () => {
         });
       }
       console.log('MATCHIN', matchingUsers.length);
-      updateSuggestions(matchingUsers);
+      dispatch({ type: SET_SUGGESTED_USERS, payload: matchingUsers });
     },
 
     [info.availableUsers]
   );
 
+  const handleKeyDown = useCallback((e) => {
+    const shiftKey = e.shiftKey;
+    const keyCode = e.nativeEvent.code;
+    console.log('KEYDOWN ACTIVATED', keyCode, shiftKey);
+    if (shiftKey && keyCode === 'Digit2') {
+      dispatch({ type: SET_SHOWING_SUGGESTIONS, payload: true });
+      return;
+    }
+
+    if (!shiftKey && keyCode === 'Enter') {
+      const comment = e.target.innerHTML;
+      dispatch({ type: SAVE_COMMENT, payload: comment });
+      editableDiv.current.innerHTML = '';
+      return;
+    }
+
+    return;
+  }, []);
+
   const handleKeyUp = useCallback(
     (e) => {
-      console.log('KEYUPCOUNT');
       const keyCode = e.nativeEvent.code;
-      // console.log('KEYBOARDEVENT', e.nativeEvent);
+      if (!e.shiftKey && keyCode === 'Enter') {
+        //   while(editableDiv.current.firstChild){
+        //     editableDiv.current.removeChild(editableDiv.current.firstChild);
+        // }
+        return;
+      }
 
-      const t = e.target.innerHTML;
-      updateComment(t);
+      const comment = e.target.innerHTML;
+      console.log('KEYUP ACTIVATED', keyCode);
+
+      dispatch({ type: SET_COMMENT, payload: comment });
 
       if (keyCode === 'Backspace') {
         //
       }
 
-      if (info.showSuggestions) {
+      if (info.showMentions && keyCode === 'Space') {
+        dispatch({ type: RESET_MENTIONING });
+        return;
+      }
+
+      if (info.showMentions && keyCode !== 'Space') {
         const ns = convertNodesToString(editableDiv.current);
         console.log('ns', ns);
 
         const findSymbol = ns.match(regex);
         console.log('finder', findSymbol);
 
-        // console.log('SHOWING SUGGESTIONS ACTIVE');
-
-        if (keyCode === 'Space') {
-          resetMentions();
-        } else {
-          const searchStr = findSymbol ? findSymbol[2] : '';
-          getSuggestion(searchStr);
-          incrementMentionLength();
-        }
-      }
-
-      if (e.shiftKey && keyCode === 'Digit2') {
-        getSuggestion('');
-        startSuggestions();
-        incrementMentionLength();
-        setMentionStart(caretPosition);
+        const searchStr = findSymbol ? findSymbol[2] : '';
+        getSuggestion(searchStr);
+        return;
       }
       return;
     },
-    [getSuggestion, caretPosition]
+    [getSuggestion, info.showMentions]
   );
+
+  const handlePaste = useCallback((e) => {
+    e.preventDefault();
+    var text = e.clipboardData.getData('text/plain');
+    document.execCommand('insertHTML', false, text);
+
+    return;
+  }, []);
 
   useEffect(() => {
     getUsers().then((users) => {
-      dispatch({ type: SET_AVAILABLE_USERS, payload: users });
+      dispatch({ type: INITIALIZE_USERS, payload: users });
     });
   }, []);
 
   return (
     <div className="widget_parent">
       <div className="comments_viewer">
-        <h1>Comments appear here.</h1>
+        <h1>Comments</h1>
+
+        <div>
+          {info.commentsList.map((__html, idx) => {
+            return (
+              <div
+                key={idx}
+                className="ce__single_comment"
+                dangerouslySetInnerHTML={{ __html }}
+              />
+            );
+          })}
+        </div>
       </div>
 
       <div className="ce__widget_container">
@@ -141,7 +158,7 @@ export const ContentEditable = () => {
           id="suggestionBox"
           className="ce__suggestion_box"
           style={{
-            display: info.showSuggestions ? 'block' : 'none',
+            display: info.showMentions ? 'block' : 'none',
             left: caretX === 0 ? '60px' : `${caretX + 20}px`,
             bottom: caretY === 0 ? '50px' : `calc(${caretY}px - 85vh)`,
           }}
@@ -152,24 +169,20 @@ export const ContentEditable = () => {
                 key={idx}
                 className="ce__suggested_user"
                 onClick={() => {
-                  const markup = `<a class="suggest" href="${webLink}">@${user.username}</a>`;
-                  // console.log(markup);
+                  const markup = ` <a class="suggest" href="${webLink}">@${user.username}</a>`;
 
                   const existing = editableDiv.current.innerHTML;
 
-                  const afterCaret = existing.slice(
-                    info.mentionStart + info.mentionLength
-                  );
-                  const beforeCaret = existing.slice(0, info.mentionStart);
+                  console.log({ existing });
 
-                  const finalHTML = beforeCaret + markup + afterCaret;
-
-                  console.log({ beforeCaret, afterCaret, finalHTML });
-
+                  const finalHTML = existing.replace(regex, markup);
                   editableDiv.current.innerHTML = finalHTML;
-                  updateComment(finalHTML);
+
                   console.log('finalHTML', finalHTML);
-                  resetMentions();
+
+                  dispatch({ type: SET_COMMENT, payload: finalHTML });
+                  dispatch({ type: RESET_MENTIONING });
+                  return;
                 }}
               >
                 {user.name} ({user.username})
@@ -184,7 +197,9 @@ export const ContentEditable = () => {
           id="editableDiv"
           className="ce__comment_box"
           onKeyUp={handleKeyUp}
-        ></div>
+          onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
+        />
       </div>
     </div>
   );
