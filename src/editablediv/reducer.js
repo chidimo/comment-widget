@@ -2,7 +2,7 @@ export const SET_COMMENT = 'SET_COMMENT';
 export const SAVE_COMMENT = 'SAVE_COMMENT';
 export const INITIALIZE_USERS = 'INITIALIZE_USERS';
 export const SET_SUGGESTED_USERS = 'SET_SUGGESTED_USERS';
-export const SET_SHOWING_SUGGESTIONS = 'SET_SHOWING_SUGGESTIONS';
+export const SET_SHOW_SUGGESTIONS = 'SET_SHOW_SUGGESTIONS';
 export const RESET_MENTIONING = 'RESET_MENTIONING';
 
 export const initCEState = {
@@ -31,7 +31,7 @@ export const CEReducer = (state = initCEState, action) => {
       };
     case SET_SUGGESTED_USERS:
       return { ...state, suggestedUsers: action.payload };
-    case SET_SHOWING_SUGGESTIONS:
+    case SET_SHOW_SUGGESTIONS:
       return { ...state, showMentions: action.payload };
     case RESET_MENTIONING:
       return {

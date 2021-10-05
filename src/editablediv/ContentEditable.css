@@ -9,10 +9,17 @@
   padding: 0 15px;
 }
 
+.ce__comments_list {
+  text-align: left;
+}
+
 .ce__single_comment {
   padding: 7px;
-  text-align: left;
   word-break: break-all;
+}
+
+.ce__single_comment p {
+  font-weight: bold;
 }
 
 .ce__single_comment:not(:last-of-type) {

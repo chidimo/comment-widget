@@ -2,14 +2,15 @@
 /* eslint-disable no-console */
 /* eslint-disable no-unused-vars */
 import { useRef, useEffect, useCallback } from 'react';
-import { useLoggingReducer } from '../helpers/useLoggingReducer';
+import { useLoggingReducer } from '../utils/useLoggingReducer';
 
 import './ContentEditable.css';
 import {
   getUsers,
-  getCaretCoordinates,
-  getCaretHTMLIndex,
-  convertNodesToString,
+  getCaretMeta,
+  castNodesToString,
+  setSelectionOffset,
+  getChildNodesAsText,
 } from './helpers';
 import {
   CEReducer,
@@ -17,34 +18,53 @@ import {
   INITIALIZE_USERS,
   SET_COMMENT,
   SAVE_COMMENT,
-  SET_SHOWING_SUGGESTIONS,
+  SET_SHOW_SUGGESTIONS,
   SET_SUGGESTED_USERS,
   RESET_MENTIONING,
 } from './reducer';
 
 const webLink = 'https://web.hypothes.is/';
 
-const useCaretCoordinates = () => getCaretCoordinates();
+const useCaretData = (el) => getCaretMeta(el);
 
-const regex = /(\s|&nbsp;)@([a-zA-Z]+)(\s|&nbsp;|)/;
+const keyCodes = ['keyA', 'keyB'];
+
+const atMatcher = /(\s|&nbsp;|^)@/gm;
+const regex = /(\s|&nbsp;|^)@([a-zA-Z]+)(\s|&nbsp;|)/m;
+const pattern = /(\s|\n|&nbsp;)@([a-zA-Z0-9_-]){0,}/gim;
 
 export const ContentEditable = () => {
-  const editableDiv = useRef();
+  const editDiv = useRef();
 
-  const { caretX, caretY } = useCaretCoordinates();
+  const { caretX, caretY, caretPosition } = useCaretData(editDiv.current);
   const [info, dispatch] = useLoggingReducer(CEReducer, initCEState);
 
-  console.log(info);
-  console.log(editableDiv?.current?.innerHTML);
+  // console.log({ caretX, caretY, caretPosition });
+  // console.log(info);
+  // console.log(editDiv?.current?.innerHTML);
+
+  const showSuggestionsOnLoneAt = useCallback(() => {
+    const selection = getChildNodesAsText(editDiv.current, { asNodes: false });
+    const joinText = selection.join('');
+    console.log({ selection, joinText });
+    const nodeAsString = castNodesToString(editDiv.current);
+    const atIsAlone = nodeAsString.match(atMatcher);
+    console.log({ nodeAsString, atIsAlone });
+
+    if (atIsAlone) {
+      dispatch({ type: SET_SHOW_SUGGESTIONS, payload: true });
+    } else {
+      dispatch({ type: SET_SHOW_SUGGESTIONS, payload: false });
+    }
+    return;
+  }, [editDiv.current]);
 
   const getSuggestion = useCallback(
     (query) => {
       let matchingUsers = info.availableUsers;
       console.log('QUERY', query);
 
-      if (query === '') {
-        // updateSuggestions(info.availableUsers);
-      } else {
+      if (query.length > 0) {
         matchingUsers = info.availableUsers.filter((user) => {
           const queryLower = query.toLowerCase();
           const nameMatch = user.name.toLowerCase().includes(queryLower);
@@ -55,7 +75,8 @@ export const ContentEditable = () => {
           return nameMatch || usernameMatch;
         });
       }
-      console.log('MATCHIN', matchingUsers.length);
+
+      // console.log('MATCHIN', matchingUsers.length);
       dispatch({ type: SET_SUGGESTED_USERS, payload: matchingUsers });
     },
 
@@ -65,16 +86,16 @@ export const ContentEditable = () => {
   const handleKeyDown = useCallback((e) => {
     const shiftKey = e.shiftKey;
     const keyCode = e.nativeEvent.code;
-    console.log('KEYDOWN ACTIVATED', keyCode, shiftKey);
-    if (shiftKey && keyCode === 'Digit2') {
-      dispatch({ type: SET_SHOWING_SUGGESTIONS, payload: true });
-      return;
-    }
+
+    // console.log('KEYDOWN ACTIVATED', keyCode, shiftKey);
 
     if (!shiftKey && keyCode === 'Enter') {
       const comment = e.target.innerHTML;
-      dispatch({ type: SAVE_COMMENT, payload: comment });
-      editableDiv.current.innerHTML = '';
+      dispatch({
+        type: SAVE_COMMENT,
+        payload: { user: 'currentUser', content: comment },
+      });
+      editDiv.current.innerHTML = '';
       return;
     }
 
@@ -83,22 +104,25 @@ export const ContentEditable = () => {
 
   const handleKeyUp = useCallback(
     (e) => {
+      const shiftKey = e.shiftKey;
       const keyCode = e.nativeEvent.code;
-      if (!e.shiftKey && keyCode === 'Enter') {
-        //   while(editableDiv.current.firstChild){
-        //     editableDiv.current.removeChild(editableDiv.current.firstChild);
-        // }
+      // console.log('KEYUP ACTIVATED', keyCode);
+
+      if (!shiftKey && keyCode === 'Enter') {
         return;
       }
 
-      const comment = e.target.innerHTML;
-      console.log('KEYUP ACTIVATED', keyCode);
-
-      dispatch({ type: SET_COMMENT, payload: comment });
+      if (shiftKey && keyCode === 'Digit2') {
+        showSuggestionsOnLoneAt();
+      }
 
       if (keyCode === 'Backspace') {
-        //
+        showSuggestionsOnLoneAt();
       }
+
+      const comment = e.target.innerHTML;
+
+      dispatch({ type: SET_COMMENT, payload: comment });
 
       if (info.showMentions && keyCode === 'Space') {
         dispatch({ type: RESET_MENTIONING });
@@ -106,13 +130,21 @@ export const ContentEditable = () => {
       }
 
       if (info.showMentions && keyCode !== 'Space') {
-        const ns = convertNodesToString(editableDiv.current);
+        const ns = castNodesToString(editDiv.current);
         console.log('ns', ns);
 
-        const findSymbol = ns.match(regex);
-        console.log('finder', findSymbol);
+        const findSymbol = ns.match(pattern);
+        console.log('findSymbol', findSymbol);
 
-        const searchStr = findSymbol ? findSymbol[2] : '';
+        let searchStr = '';
+
+        if (findSymbol) {
+          console.log('findSymbol', findSymbol.length, findSymbol);
+          if (findSymbol.length > 1) {
+            searchStr = findSymbol[2];
+          }
+        }
+
         getSuggestion(searchStr);
         return;
       }
@@ -140,14 +172,14 @@ export const ContentEditable = () => {
       <div className="comments_viewer">
         <h1>Comments</h1>
 
-        <div>
-          {info.commentsList.map((__html, idx) => {
+        <div className="ce__comments_list">
+          {info.commentsList.map((comment, idx) => {
+            const { user, content: __html } = comment;
             return (
-              <div
-                key={idx}
-                className="ce__single_comment"
-                dangerouslySetInnerHTML={{ __html }}
-              />
+              <div key={idx} className="ce__single_comment">
+                <p className="">{user}</p>
+                <div dangerouslySetInnerHTML={{ __html }} />
+              </div>
             );
           })}
         </div>
@@ -171,17 +203,18 @@ export const ContentEditable = () => {
                 onClick={() => {
                   const markup = ` <a class="suggest" href="${webLink}">@${user.username}</a>`;
 
-                  const existing = editableDiv.current.innerHTML;
+                  const existing = editDiv.current.innerHTML;
 
                   console.log({ existing });
 
-                  const finalHTML = existing.replace(regex, markup);
-                  editableDiv.current.innerHTML = finalHTML;
+                  const finalHTML = existing.replace(pattern, markup);
+                  editDiv.current.innerHTML = finalHTML;
 
                   console.log('finalHTML', finalHTML);
 
                   dispatch({ type: SET_COMMENT, payload: finalHTML });
                   dispatch({ type: RESET_MENTIONING });
+                  setSelectionOffset(editDiv.current, caretPosition);
                   return;
                 }}
               >
@@ -192,9 +225,10 @@ export const ContentEditable = () => {
         </div>
 
         <div
-          ref={editableDiv}
+          ref={editDiv}
           contentEditable
-          id="editableDiv"
+          id="editDiv"
+          data-testid="editDiv"
           className="ce__comment_box"
           onKeyUp={handleKeyUp}
           onKeyDown={handleKeyDown}
