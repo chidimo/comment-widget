@@ -6,7 +6,10 @@ export const Home = () => {
       <h1>Implementations</h1>
 
       <p>
-        <Link to="/content-editable">Content Editable</Link>
+        <Link to="/editable-div-widget">Editable div widget</Link>
+      </p>
+      <p>
+        <Link to="/textarea-widget">Textarea Widget</Link>
       </p>
     </div>
   );

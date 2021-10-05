@@ -1,7 +1,8 @@
 import { Route, Switch, BrowserRouter } from 'react-router-dom';
 
 import { Home } from './Home';
-import { ContentEditable } from './widget/ContentEditable';
+import {TextAreaWidget} from './textarea/TextAreaWidget'
+import { ContentEditable } from './editablediv/ContentEditable';
 
 export const Routes = () => {
   return (
@@ -9,7 +10,8 @@ export const Routes = () => {
     <BrowserRouter basename={process.env.PUBLIC_URL}>
       <Switch>
         <Route exact path="/" component={Home} />
-        <Route exact path="/content-editable" component={ContentEditable} />
+        <Route exact path="/editable-div-widget" component={ContentEditable} />
+        <Route exact path="/textarea-widget" component={TextAreaWidget} />
       </Switch>
     </BrowserRouter>
   );

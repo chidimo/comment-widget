@@ -37,7 +37,7 @@ export const makeSelection = () => {
   return selectionRange;
 };
 
-export const getCaretMeta = (element) => {
+export const getCaretMetaInfo = (element) => {
   let caretX = 0;
   let caretY = 0;
   let caretPosition = 0;
@@ -46,31 +46,40 @@ export const getCaretMeta = (element) => {
     return { caretX, caretY, caretPosition };
   }
 
-  // focus the parent and clone the range
-  // element.focus();
-  const actualRange = window.getSelection().getRangeAt(0);
-  const xyRange = actualRange.cloneRange();
-  const positionRange = actualRange.cloneRange();
+  const isInputElement =
+    element.nodeName === 'TEXTAREA' || element.nodeName === 'INPUT';
 
-  // START get caret position
-  // select everything before the caret
-  positionRange.selectNodeContents(element);
-  positionRange.setEnd(actualRange.endContainer, actualRange.endOffset);
-  caretPosition = positionRange.toString().length;
-  // END get caret position
-
-  // START get caret xy
-  // Collapse the range to the start, so there are not multiple chars selected
-  xyRange.collapse(true);
-  // getCientRects returns all the positioning information we need
-  const rect = xyRange.getClientRects()[0];
-  if (rect) {
-    caretX = rect.left; // since the caret is only 1px wide, left == right
-    caretY = rect.top; // top edge of the caret
+  if (isInputElement) {
+    return { caretX, caretY, caretPosition: element.selectionStart };
   }
-  // END get caret xy
 
-  return { caretX, caretY, caretPosition };
+  if (element.contentEditable) {
+    // focus the parent and clone the range
+    element.focus();
+    const actualRange = window.getSelection().getRangeAt(0);
+
+    // START get caret position
+    // select everything before the caret
+    const positionRange = actualRange.cloneRange();
+    positionRange.selectNodeContents(element);
+    positionRange.setEnd(actualRange.endContainer, actualRange.endOffset);
+    caretPosition = positionRange.toString().length;
+    // END get caret position
+
+    // START get caret xy
+    const xyRange = actualRange.cloneRange();
+    // Collapse the range to the start, so there are not multiple chars selected
+    xyRange.collapse(true);
+    // getCientRects returns all the positioning information we need
+    const rect = xyRange.getClientRects()[0];
+    if (rect) {
+      caretX = rect.left; // since the caret is only 1px wide, left == right
+      caretY = rect.top; // top edge of the caret
+    }
+    // END get caret xy
+
+    return { caretX, caretY, caretPosition };
+  }
 };
 
 export const getChildNodesAsText = (element, { asNodes = true } = {}) => {
