@@ -1,43 +1,41 @@
 export const SET_COMMENT = 'SET_COMMENT';
-export const SAVE_COMMENT = 'SAVE_COMMENT';
 export const INITIALIZE_USERS = 'INITIALIZE_USERS';
 export const SET_SUGGESTED_USERS = 'SET_SUGGESTED_USERS';
-export const SET_SHOW_SUGGESTIONS = 'SET_SHOW_SUGGESTIONS';
-export const RESET_MENTIONING = 'RESET_MENTIONING';
+export const TOGGLE_SUGGESTIONS = 'TOGGLE_SUGGESTIONS';
+export const SET_SEARCH_STRING = 'SET_SEARCH_STRING';
+export const SET_COMMENT_AND_RESET = 'SET_COMMENT_AND_RESET';
 
-export const initCEState = {
-  commentsList: [],
+export const initTEState = {
+  search: '',
   comment: '',
   suggestedUsers: [],
-  showMentions: false,
-  availableUsers: [],
+  allUsers: [],
+  showUsers: false,
 };
 
-export const CEReducer = (state = initCEState, action) => {
+export const CEReducer = (state = initTEState, action) => {
   switch (action.type) {
     case SET_COMMENT:
       return { ...state, comment: action.payload };
-    case SAVE_COMMENT:
-      return {
-        ...state,
-        // comment: '',
-        commentsList: state.commentsList.concat(action.payload),
-      };
     case INITIALIZE_USERS:
       return {
         ...state,
-        availableUsers: action.payload,
+        allUsers: action.payload,
         suggestedUsers: action.payload,
       };
+    case SET_SEARCH_STRING:
+      return { ...state, search: action.payload };
     case SET_SUGGESTED_USERS:
       return { ...state, suggestedUsers: action.payload };
-    case SET_SHOW_SUGGESTIONS:
-      return { ...state, showMentions: action.payload };
-    case RESET_MENTIONING:
+    case TOGGLE_SUGGESTIONS:
+      return { ...state, showUsers: action.payload };
+    case SET_COMMENT_AND_RESET:
       return {
         ...state,
-        showMentions: false,
-        suggestedUsers: state.availableUsers,
+        search: '',
+        showUsers: false,
+        comment: action.payload,
+        suggestedUsers: state.allUsers,
       };
     default:
       return state;

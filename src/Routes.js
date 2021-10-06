@@ -1,7 +1,7 @@
 import { Route, Switch, BrowserRouter } from 'react-router-dom';
 
 import { Home } from './Home';
-import {TextAreaWidget} from './textarea/TextAreaWidget'
+import { TextAreaWidget } from './textarea/TextAreaWidget';
 import { ContentEditable } from './editablediv/ContentEditable';
 
 export const Routes = () => {

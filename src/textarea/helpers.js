@@ -5,6 +5,29 @@ export const getUsers = () =>
     setTimeout(() => resolve(userData), 1000);
   });
 
+export const useCheckElInViewport = (el) => {
+  if (!el) {
+    return false;
+  }
+
+  var bounding = el.getBoundingClientRect();
+
+  const topCheck = bounding.top >= 0;
+  const leftCheck = bounding.left >= 0;
+  const rightCheck =
+    bounding.right <=
+    (window.innerWidth || document.documentElement.clientWidth);
+  const bottomCheck =
+    bounding.bottom <=
+    (window.innerHeight || document.documentElement.clientHeight);
+
+  if (topCheck && leftCheck && rightCheck && bottomCheck) {
+    // console.log('Element is in the viewport!');
+  } else {
+    // console.log('Element is NOT in the viewport!');
+  }
+};
+
 const selectionExists = () => {
   // check whether caret (cursor) is positioned anywhere in
   // the document

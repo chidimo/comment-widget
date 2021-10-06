@@ -18,7 +18,7 @@ import {
   INITIALIZE_USERS,
   SET_COMMENT,
   SAVE_COMMENT,
-  SET_SHOW_SUGGESTIONS,
+  TOGGLE_SUGGESTIONS,
   SET_SUGGESTED_USERS,
   RESET_MENTIONING,
 } from './reducer';
@@ -30,8 +30,8 @@ const useCaretData = (el) => getCaretMeta(el);
 const keyCodes = ['keyA', 'keyB'];
 
 const atMatcher = /(\s|&nbsp;|^)@/gm;
-const regex = /(\s|&nbsp;|^)@([a-zA-Z]+)(\s|&nbsp;|)/m;
-const pattern = /(\s|\n|&nbsp;)@([a-zA-Z0-9_-]){0,}/gim;
+const regex = /(\s|\n|&nbsp;)@([a-zA-Z0-9_-]+)(\s|&nbsp;|)/m;
+const pattern = /(\s|\n|&nbsp;)@([a-zA-Z0-9_-])+/im;
 
 export const ContentEditable = () => {
   const editDiv = useRef();
@@ -52,20 +52,20 @@ export const ContentEditable = () => {
     console.log({ nodeAsString, atIsAlone });
 
     if (atIsAlone) {
-      dispatch({ type: SET_SHOW_SUGGESTIONS, payload: true });
+      dispatch({ type: TOGGLE_SUGGESTIONS, payload: true });
     } else {
-      dispatch({ type: SET_SHOW_SUGGESTIONS, payload: false });
+      dispatch({ type: TOGGLE_SUGGESTIONS, payload: false });
     }
     return;
   }, [editDiv.current]);
 
   const getSuggestion = useCallback(
     (query) => {
-      let matchingUsers = info.availableUsers;
+      let matchingUsers = info.allUsers;
       console.log('QUERY', query);
 
       if (query.length > 0) {
-        matchingUsers = info.availableUsers.filter((user) => {
+        matchingUsers = info.allUsers.filter((user) => {
           const queryLower = query.toLowerCase();
           const nameMatch = user.name.toLowerCase().includes(queryLower);
           const usernameMatch = user.username
@@ -80,7 +80,7 @@ export const ContentEditable = () => {
       dispatch({ type: SET_SUGGESTED_USERS, payload: matchingUsers });
     },
 
-    [info.availableUsers]
+    [info.allUsers]
   );
 
   const handleKeyDown = useCallback((e) => {
@@ -124,12 +124,12 @@ export const ContentEditable = () => {
 
       dispatch({ type: SET_COMMENT, payload: comment });
 
-      if (info.showMentions && keyCode === 'Space') {
+      if (info.showUsers && keyCode === 'Space') {
         dispatch({ type: RESET_MENTIONING });
         return;
       }
 
-      if (info.showMentions && keyCode !== 'Space') {
+      if (info.showUsers && keyCode !== 'Space') {
         const ns = castNodesToString(editDiv.current);
         console.log('ns', ns);
 
@@ -150,7 +150,7 @@ export const ContentEditable = () => {
       }
       return;
     },
-    [getSuggestion, info.showMentions]
+    [getSuggestion, info.showUsers]
   );
 
   const handlePaste = useCallback((e) => {
@@ -188,9 +188,10 @@ export const ContentEditable = () => {
       <div className="ce__widget_container">
         <div
           id="suggestionBox"
+          data-testid='suggestionBox'
           className="ce__suggestion_box"
           style={{
-            display: info.showMentions ? 'block' : 'none',
+            display: info.showUsers ? 'block' : 'none',
             left: caretX === 0 ? '60px' : `${caretX + 20}px`,
             bottom: caretY === 0 ? '50px' : `calc(${caretY}px - 85vh)`,
           }}
@@ -199,6 +200,7 @@ export const ContentEditable = () => {
             return (
               <div
                 key={idx}
+
                 className="ce__suggested_user"
                 onClick={() => {
                   const markup = ` <a class="suggest" href="${webLink}">@${user.username}</a>`;
