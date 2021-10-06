@@ -28,6 +28,10 @@
 1. `userList` is the list of possible users that can be referenced in a comment.
 1. `onSaveComment` is a function that receives the parsed comment as it's only argument.
 
+## Note on usernames
+
+1. `username`s can only contain `a-z`, `A-Z`, `0-9`, `_`, `-`
+
 ## Resources
 
 1. <https://javascript.plainenglish.io/how-to-find-the-caret-inside-a-contenteditable-element-955a5ad9bf81>

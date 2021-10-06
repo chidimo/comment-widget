@@ -2,7 +2,7 @@ import { position } from 'caret-pos';
 import PropTypes from 'prop-types';
 import { useRef, useEffect, useCallback } from 'react';
 
-import { processComment } from '../utils/parseComment';
+import { parseMentions } from '../utils/processComment';
 import { useLoggingReducer } from '../utils/useLoggingReducer';
 
 import {
@@ -200,14 +200,12 @@ export const Widget = (props) => {
   );
 
   const handleSave = useCallback(() => {
-    onSaveComment(
-      processComment(textareaWidget.current.value, info.suggestedUsers)
-    );
+    onSaveComment(parseMentions(textareaWidget.current.value, info.allUsers));
     saveCommentAndReset('');
   }, [
     onSaveComment,
     saveCommentAndReset,
-    info.suggestedUsers,
+    info.allUsers,
     textareaWidget.current,
   ]);
 
