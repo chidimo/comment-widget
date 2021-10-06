@@ -6,6 +6,11 @@
   padding: 10px 15px;
 }
 
+.ta__comments_viewer {
+  width: 80%;
+  margin: auto;
+}
+
 .ta__comments_list {
   text-align: left;
   white-space: pre-wrap;
@@ -14,13 +19,11 @@
 }
 
 .ta__single_comment {
-  width: 80%;
   margin: auto;
   padding: 7px;
   border: 1px solid grey;
-    border-radius: 5px;
-    margin-bottom: 3px;
-  /* word-break: break-all; */
+  border-radius: 7px;
+  margin-bottom: 5px;
 }
 
 .ta__single_comment .username {

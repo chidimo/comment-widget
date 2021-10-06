@@ -29,7 +29,7 @@ const useCaretMetaInfo = (el) => {
 const ENV = process.env.NODE_ENV;
 const forwardRegex = /(\s|\n|^)@/;
 const alphaNumRegex = /[a-zA-Z0-9_-]{1}/;
-const backwardRegex = /(\s|\n|^)@[a-zA-Z0-9_-]{1}/;
+const backwardRegex = /(\s|\n|^)(@)([a-zA-Z0-9_-])+$/g;
 
 export const Widget = (props) => {
   const { onSaveComment, userList } = props;
@@ -41,34 +41,8 @@ export const Widget = (props) => {
     top: caretY,
     pos: caretPosition,
   } = useCaretMetaInfo(textareaWidget.current);
-  // console.log({caretPosition})
 
   const [ info, dispatch ] = useLoggingReducer(CEReducer, initTEState);
-
-  const showSuggestionBox = useCallback(
-    () => dispatch({ type: TOGGLE_SUGGESTIONS, payload: true }),
-    []
-  );
-
-  const hideSuggestionBox = useCallback(
-    () => dispatch({ type: TOGGLE_SUGGESTIONS, payload: false }),
-    []
-  );
-
-  const updateSearch = useCallback(
-    (value) => dispatch({ type: SET_SEARCH_STRING, payload: value }),
-    []
-  );
-
-  const saveCommentAndReset = useCallback(
-    (payload) => dispatch({ type: SET_COMMENT_AND_RESET, payload }),
-    []
-  );
-
-  const updateUser = useCallback(
-    (payload) => dispatch({ type: SET_SELECTED_USER, payload }),
-    []
-  );
 
   const filterUsers = useCallback(
     (query) => {
@@ -91,22 +65,42 @@ export const Widget = (props) => {
 
     [ info.allUsers ]
   );
+  const showSuggestionBox = useCallback(
+    () => dispatch({ type: TOGGLE_SUGGESTIONS, payload: true }),
+    []
+  );
 
-  const CLICK_SELECT_USER = 'CLICK_SELECT_USER';
-  const ENTER_SELECT_USER = 'ENTER_SELECT_USER';
+  const hideSuggestionBox = useCallback(
+    () => dispatch({ type: TOGGLE_SUGGESTIONS, payload: false }),
+    []
+  );
+
+  const updateSearch = useCallback(
+    (value) => {
+      dispatch({ type: SET_SEARCH_STRING, payload: value });
+      filterUsers(value);
+    },
+    [ filterUsers ]
+  );
+
+  const saveCommentAndReset = useCallback(
+    (payload) => dispatch({ type: SET_COMMENT_AND_RESET, payload }),
+    []
+  );
+
+  const updateUser = useCallback(
+    (payload) => dispatch({ type: SET_SELECTED_USER, payload }),
+    []
+  );
 
   const handleUserClick = useCallback(
-    (user, { action = CLICK_SELECT_USER } = {}) => {
+    (user) => {
       // when ENTER is pressed, the caret is set backward
       // by 1 position because I am doing event.preventDefault()
       // in the onKeyDown handler. So we need to compensate for that
       const value = textareaWidget.current.value;
 
       let splitPoint = caretPosition;
-
-      if (action === ENTER_SELECT_USER) {
-        splitPoint = caretPosition + 1;
-      }
 
       if (ENV === 'test') {
         // I have no idea why this is the case.
@@ -142,12 +136,13 @@ export const Widget = (props) => {
       if (shiftKey && keyCode === 'Enter') {
         updateSearch('');
         hideSuggestionBox();
+        return;
       }
 
       if (!shiftKey && keyCode === 'Enter') {
         if (info.showUsers) {
           const user = info.suggestedUsers[info.selectedUserIndex];
-          handleUserClick(user, { action: ENTER_SELECT_USER });
+          handleUserClick(user);
         } else {
           handleSave();
         }
@@ -167,19 +162,23 @@ export const Widget = (props) => {
       }
 
       if (keyCode === 'Backspace') {
-        const search = info.search.substr(0, info.search.length - 1);
         if (info.showUsers) {
-          filterUsers(search);
+          const search = info.search.substr(0, info.search.length - 1);
+
           updateSearch(search);
 
           if (value[value.length - 1] === '@') {
+            // this keystroke deletes the @ text
             hideSuggestionBox();
           }
         } else {
-          const matchString = value.substr(0, value.length - 1);
+          const matchString = value.substr(0, caretPosition - 1);
           const matched = matchString.match(backwardRegex);
 
           if (matched) {
+            const splitMatch = matched[0].split('@');
+            const searchString = splitMatch[splitMatch.length - 1];
+            updateSearch(searchString);
             showSuggestionBox();
           } else {
             hideSuggestionBox();
@@ -190,7 +189,6 @@ export const Widget = (props) => {
 
       if (key.length === 1 && key.match(alphaNumRegex) && info.showUsers) {
         const search = info.search + key;
-        filterUsers(search);
         updateSearch(search);
         return;
       }
@@ -216,6 +214,7 @@ export const Widget = (props) => {
       info.showUsers,
       info.suggestedUsers,
       info.selectedUserIndex,
+      caretPosition,
       onSaveComment,
     ]
   );
@@ -242,31 +241,35 @@ export const Widget = (props) => {
         className="ta__suggestion_box"
         aria-hidden={!info.showUsers}
         style={{
-          left: `${caretX + 35}px`,
-          top: `${caretY + 20}px`,
+          left: `${caretX + 10}px`,
+          top: `${caretY + 15}px`,
           display: info.showUsers ? 'block' : 'none',
         }}
       >
-        {info.suggestedUsers.length === 0 && <p>No matching user</p>}
+        {info.suggestedUsers.length === 0 && (
+          <p className="ta__suggested_user">No matching user</p>
+        )}
 
         {info.suggestedUsers.map((user, idx) => {
           const className = [
             'ta__suggested_user',
             idx === info.selectedUserIndex ? 'active' : '',
           ].join(' ');
-          // console.log('CLICK CLICKED', user)
           return (
-            <div
+            <p
               key={idx}
               className={className}
               onClick={() => handleUserClick(user)}
             >
               {user.name} ({user.username})
-            </div>
+            </p>
           );
         })}
       </div>
 
+      <label id="textareaWidgetLabel" htmlFor="textareaWidget">
+        Comment:
+      </label>
       <textarea
         ref={textareaWidget}
         id="textareaWidget"
@@ -275,7 +278,7 @@ export const Widget = (props) => {
         onKeyDown={handleKeyDown}
         placeholder="Write a comment..."
         value={info.comment}
-        rows={10}
+        rows={7}
         onChange={(e) => {
           dispatch({ type: SET_COMMENT, payload: e.target.value });
         }}

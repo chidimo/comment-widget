@@ -21,7 +21,6 @@
 
         yarn test
 
-
 ## How to use the comment widget
 
 1. The comment widget is a React component that takes two required `props`: `onSaveComment` and `userList`.
