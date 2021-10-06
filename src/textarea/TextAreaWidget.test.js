@@ -14,29 +14,41 @@ describe('<TextAreaWidget />', () => {
 
     userEvent.type(inputArea, TEST_STRING);
     expect(inputArea.textContent).toBe(TEST_STRING);
-    // screen.debug(inputArea);
   });
 
   it('should render suggested users only when @ is typed', () => {
     render(<TextAreaWidget />);
+    const usersArea = screen.getByTestId('suggestionBox');
     const inputArea = screen.getByTestId('textareaWidget');
 
-    expect(screen.getByTestId('suggestionBox')).toHaveStyle('display: none');
+    expect(usersArea).toHaveStyle('display: none');
     userEvent.type(inputArea, '@');
-    expect(screen.getByTestId('suggestionBox')).toHaveStyle('display: block');
+    expect(usersArea).toHaveStyle('display: block');
   });
 
   it('should render correct list of matching users', async () => {
     render(<TextAreaWidget />);
+    const usersArea = screen.getByTestId('suggestionBox');
     const inputArea = screen.getByTestId('textareaWidget');
 
     await userEvent.type(inputArea, '@paul', { delay: 150 });
-    expect(screen.getByTestId('suggestionBox')).toHaveStyle('display: block');
-    // screen.debug(inputArea);
+    expect(usersArea).toHaveStyle('display: block');
 
     // this line relies on the existing users data set
-    expect(screen.getByTestId('suggestionBox').childNodes).toHaveLength(3);
+    expect(usersArea.childNodes).toHaveLength(3);
+  });
 
-    screen.debug();
+  it('should render a matching user inside the textarea', async () => {
+    render(<TextAreaWidget />);
+    const usersArea = screen.getByTestId('suggestionBox');
+    const inputArea = screen.getByTestId('textareaWidget');
+
+    await userEvent.type(inputArea, 'this is @paul', { delay: 150 });
+    expect(usersArea).toHaveStyle('display: block');
+
+    const user = usersArea.childNodes[0];
+    userEvent.click(user);
+
+    expect(inputArea.textContent).toBe('this is @pturner0');
   });
 });

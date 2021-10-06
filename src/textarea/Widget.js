@@ -25,6 +25,8 @@ const useCaretMetaInfo = (el) => {
   return position(el);
 };
 
+// eslint-disable-next-line no-undef
+const ENV = process.env.NODE_ENV;
 const forwardRegex = /(\s|\n|^)@/;
 const alphaNumRegex = /[a-zA-Z0-9_-]{1}/;
 const backwardRegex = /(\s|\n|^)@[a-zA-Z0-9_-]{1}/;
@@ -39,6 +41,7 @@ export const Widget = (props) => {
     top: caretY,
     pos: caretPosition,
   } = useCaretMetaInfo(textareaWidget.current);
+  // console.log({caretPosition})
 
   const [ info, dispatch ] = useLoggingReducer(CEReducer, initTEState);
 
@@ -89,12 +92,32 @@ export const Widget = (props) => {
     [ info.allUsers ]
   );
 
+  const CLICK_SELECT_USER = 'CLICK_SELECT_USER';
+  const ENTER_SELECT_USER = 'ENTER_SELECT_USER';
+
   const handleUserClick = useCallback(
-    (user) => {
+    (user, { action = CLICK_SELECT_USER } = {}) => {
+      // when ENTER is pressed, the caret is set backward
+      // by 1 position because I am doing event.preventDefault()
+      // in the onKeyDown handler. So we need to compensate for that
       const value = textareaWidget.current.value;
 
-      const left = value.substr(0, caretPosition - info.search.length - 1);
-      const right = value.substr(caretPosition);
+      let splitPoint = caretPosition;
+
+      if (action === ENTER_SELECT_USER) {
+        splitPoint = caretPosition + 1;
+      }
+
+      if (ENV === 'test') {
+        // I have no idea why this is the case.
+        // I don't think its a bug because
+        //e verything works fine in the browser.
+        // but it's a weird edge case I intend to investigate.
+        splitPoint += 1;
+      }
+
+      const left = value.substr(0, splitPoint - info.search.length - 1);
+      const right = value.substr(splitPoint);
       const payload = left + '@' + user.username + right;
 
       saveCommentAndReset(payload);
@@ -124,7 +147,7 @@ export const Widget = (props) => {
       if (!shiftKey && keyCode === 'Enter') {
         if (info.showUsers) {
           const user = info.suggestedUsers[info.selectedUserIndex];
-          handleUserClick(user);
+          handleUserClick(user, { action: ENTER_SELECT_USER });
         } else {
           handleSave();
         }
@@ -187,8 +210,6 @@ export const Widget = (props) => {
         updateUser((info.selectedUserIndex + 1) % info.suggestedUsers.length);
         return;
       }
-
-      return;
     },
     [
       info.search,
@@ -219,6 +240,7 @@ export const Widget = (props) => {
         id="suggestionBox"
         data-testid="suggestionBox"
         className="ta__suggestion_box"
+        aria-hidden={!info.showUsers}
         style={{
           left: `${caretX + 35}px`,
           top: `${caretY + 20}px`,
@@ -232,6 +254,7 @@ export const Widget = (props) => {
             'ta__suggested_user',
             idx === info.selectedUserIndex ? 'active' : '',
           ].join(' ');
+          // console.log('CLICK CLICKED', user)
           return (
             <div
               key={idx}

@@ -5,8 +5,6 @@ import './TextAreaWidget.css';
 import { Widget } from './Widget';
 import { getUsers } from '../utils/actions';
 
-// const webLink = 'https://web.hypothes.is/';
-
 export const TextAreaWidget = () => {
   const [ userList, setUserList ] = useState([]);
   const [ commentList, setCommentLiist ] = useState([]);
@@ -20,6 +18,7 @@ export const TextAreaWidget = () => {
 
   useEffect(() => {
     getUsers().then((users) => setUserList(users));
+    return () => setUserList([]);
   }, []);
 
   return (
