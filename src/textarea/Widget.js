@@ -1,6 +1,3 @@
-/* eslint-disable array-bracket-spacing */
-/* eslint-disable no-console */
-/* eslint-disable no-unused-vars */
 import { position } from 'caret-pos';
 import PropTypes from 'prop-types';
 
@@ -38,13 +35,10 @@ export const Widget = (props) => {
   const {
     left: caretX,
     top: caretY,
-    height: caretHeight,
     pos: caretPosition,
   } = useCaretMetaInfo(textareaWidget.current);
 
-  const [info, dispatch] = useLoggingReducer(CEReducer, initTEState);
-
-  // console.log({ caretX, caretY, caretHeight, caretPosition });
+  const [ info, dispatch ] = useLoggingReducer(CEReducer, initTEState);
 
   const showSuggestionBox = useCallback(
     () => dispatch({ type: TOGGLE_SUGGESTIONS, payload: true }),
@@ -85,7 +79,7 @@ export const Widget = (props) => {
       dispatch({ type: SET_SUGGESTED_USERS, payload: matchingUsers });
     },
 
-    [info.allUsers]
+    [ info.allUsers ]
   );
 
   const handleKeyDown = useCallback(
@@ -94,8 +88,6 @@ export const Widget = (props) => {
       const keyCode = e.code;
       const shiftKey = e.shiftKey;
       const value = e.target.value;
-
-      console.log('KEYDOWN ACTIVATED', { key, keyCode, shiftKey, value });
 
       if (keyCode === 'Space') {
         updateSearch('');
@@ -111,6 +103,7 @@ export const Widget = (props) => {
       if (!shiftKey && keyCode === 'Enter') {
         onSaveComment(value);
         saveCommentAndReset('');
+        e.preventDefault();
         return;
       }
 
@@ -151,7 +144,6 @@ export const Widget = (props) => {
         const search = info.search + key;
         filterUsers(search);
         updateSearch(search);
-
         return;
       }
 
@@ -165,7 +157,7 @@ export const Widget = (props) => {
 
       return;
     },
-    [info.showUsers, info.search]
+    [ info.showUsers, info.search, onSaveComment ]
   );
 
   const handlePaste = useCallback((e) => {
@@ -178,7 +170,7 @@ export const Widget = (props) => {
 
   useEffect(() => {
     dispatch({ type: INITIALIZE_USERS, payload: userList });
-  }, [userList]);
+  }, [ userList ]);
 
   return (
     <div className="ta__widget_container">
@@ -230,6 +222,7 @@ export const Widget = (props) => {
         value={info.comment}
         rows={10}
         onChange={(e) => {
+          console.log('Trusted', e);
           dispatch({ type: SET_COMMENT, payload: e.target.value });
         }}
       />

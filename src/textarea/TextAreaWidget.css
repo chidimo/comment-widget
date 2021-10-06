@@ -1,4 +1,4 @@
-.ta__widget_parent {
+.ta__comments_app {
   height: calc(100vh - 20px);
   display: flex;
   flex-direction: column;
@@ -9,11 +9,23 @@
 .ta__comments_list {
   text-align: left;
   white-space: pre-wrap;
+  overflow: scroll;
+  height: calc(100vh - 300px);
 }
 
 .ta__single_comment {
+  width: 80%;
+  margin: auto;
   padding: 7px;
-  word-break: break-all;
+  border: 1px solid grey;
+    border-radius: 5px;
+    margin-bottom: 3px;
+  /* word-break: break-all; */
+}
+
+.ta__single_comment .username {
+  margin-top: 0;
+
 }
 
 .ta__single_comment p {

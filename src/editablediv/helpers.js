@@ -1,10 +1,3 @@
-import { userData } from '../UserData';
-
-export const getUsers = () =>
-  new Promise((resolve) => {
-    setTimeout(() => resolve(userData), 1000);
-  });
-
 const selectionExists = () => {
   // check whether caret (cursor) is positioned anywhere in
   // the document

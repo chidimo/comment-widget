@@ -1,10 +1,3 @@
-import { userData } from '../UserData';
-
-export const getUsers = () =>
-  new Promise((resolve) => {
-    setTimeout(() => resolve(userData), 1000);
-  });
-
 export const useCheckElInViewport = (el) => {
   if (!el) {
     return false;

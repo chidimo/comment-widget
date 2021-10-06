@@ -3,10 +3,10 @@
 /* eslint-disable no-unused-vars */
 import { useRef, useEffect, useCallback } from 'react';
 import { useLoggingReducer } from '../utils/useLoggingReducer';
+import { getUsers } from '../utils/actions';
 
 import './ContentEditable.css';
 import {
-  getUsers,
   getCaretMeta,
   castNodesToString,
   setSelectionOffset,
@@ -40,8 +40,6 @@ export const ContentEditable = () => {
   const [info, dispatch] = useLoggingReducer(CEReducer, initCEState);
 
   // console.log({ caretX, caretY, caretPosition });
-  // console.log(info);
-  // console.log(editDiv?.current?.innerHTML);
 
   const showSuggestionsOnLoneAt = useCallback(() => {
     const selection = getChildNodesAsText(editDiv.current, { asNodes: false });
@@ -59,10 +57,9 @@ export const ContentEditable = () => {
     return;
   }, [editDiv.current]);
 
-  const getSuggestion = useCallback(
+  const filterUsers = useCallback(
     (query) => {
       let matchingUsers = info.allUsers;
-      console.log('QUERY', query);
 
       if (query.length > 0) {
         matchingUsers = info.allUsers.filter((user) => {
@@ -76,7 +73,6 @@ export const ContentEditable = () => {
         });
       }
 
-      // console.log('MATCHIN', matchingUsers.length);
       dispatch({ type: SET_SUGGESTED_USERS, payload: matchingUsers });
     },
 
@@ -145,12 +141,12 @@ export const ContentEditable = () => {
           }
         }
 
-        getSuggestion(searchStr);
+        filterUsers(searchStr);
         return;
       }
       return;
     },
-    [getSuggestion, info.showUsers]
+    [filterUsers, info.showUsers]
   );
 
   const handlePaste = useCallback((e) => {
