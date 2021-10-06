@@ -38,6 +38,7 @@ export const CEReducer = (state = initTEState, action) => {
         ...state,
         search: '',
         showUsers: false,
+        selectedUserIndex: 0,
         comment: action.payload,
         suggestedUsers: state.allUsers,
       };

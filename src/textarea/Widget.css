@@ -1,5 +1,7 @@
 .ta__widget_container {
   position: relative;
+  width: 80%;
+  margin: auto;
 }
 
 .ta__comment_box {
@@ -7,7 +9,8 @@
   padding: 15px;
   border-radius: 5px;
   line-height: 1em;
-  width: 80%;
+  width: 100%;
+  box-sizing: border-box
 }
 
 .ta__suggestion_box {
@@ -33,5 +36,13 @@
 a.suggest {
   text-decoration: none;
   cursor: pointer;
-  /* color: blue; */
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  background-color: #07f;
+  color: white;
+  border: none;
+  cursor: pointer;
 }

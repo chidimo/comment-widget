@@ -1,10 +1,10 @@
 import { position } from 'caret-pos';
 import PropTypes from 'prop-types';
-
 import { useRef, useEffect, useCallback } from 'react';
+
+import { processComment } from '../utils/parseComment';
 import { useLoggingReducer } from '../utils/useLoggingReducer';
 
-import './Widget.css';
 import {
   CEReducer,
   initTEState,
@@ -16,6 +16,7 @@ import {
   SET_COMMENT_AND_RESET,
   SET_SELECTED_USER,
 } from './reducer';
+import './Widget.css';
 
 const useCaretMetaInfo = (el) => {
   if (!el) {
@@ -125,8 +126,7 @@ export const Widget = (props) => {
           const user = info.suggestedUsers[info.selectedUserIndex];
           handleUserClick(user);
         } else {
-          onSaveComment(value);
-          saveCommentAndReset('');
+          handleSave();
         }
         e.preventDefault();
         return;
@@ -199,13 +199,17 @@ export const Widget = (props) => {
     ]
   );
 
-  const handlePaste = useCallback((e) => {
-    e.preventDefault();
-    var text = e.clipboardData.getData('text/plain');
-    document.execCommand('insertHTML', false, text);
-
-    return;
-  }, []);
+  const handleSave = useCallback(() => {
+    onSaveComment(
+      processComment(textareaWidget.current.value, info.suggestedUsers)
+    );
+    saveCommentAndReset('');
+  }, [
+    onSaveComment,
+    saveCommentAndReset,
+    info.suggestedUsers,
+    textareaWidget.current,
+  ]);
 
   useEffect(() => {
     dispatch({ type: INITIALIZE_USERS, payload: userList });
@@ -248,7 +252,6 @@ export const Widget = (props) => {
         data-testid="textareaWidget"
         className="ta__comment_box"
         onKeyDown={handleKeyDown}
-        onPaste={handlePaste}
         placeholder="Write a comment..."
         value={info.comment}
         rows={10}
@@ -256,6 +259,12 @@ export const Widget = (props) => {
           dispatch({ type: SET_COMMENT, payload: e.target.value });
         }}
       />
+
+      <div className="button_container">
+        <button type="submit" onClick={handleSave}>
+          Comment
+        </button>
+      </div>
     </div>
   );
 };

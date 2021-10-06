@@ -32,7 +32,7 @@ export const TextAreaWidget = () => {
             return (
               <div key={idx} className="ta__single_comment">
                 <p className="username">{comment.user}</p>
-                <div>{comment.comment}</div>
+                <div dangerouslySetInnerHTML={{ __html: comment.comment }} />
               </div>
             );
           })}

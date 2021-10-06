@@ -6,10 +6,10 @@ export const Home = () => {
       <h1>Implementations</h1>
 
       <p>
-        <Link to="/editable-div-widget">Editable div widget</Link>
+        <Link to="/textarea-widget">Textarea Widget</Link>
       </p>
       <p>
-        <Link to="/textarea-widget">Textarea Widget</Link>
+        <Link to="/editable-div-widget">Editable div widget</Link>
       </p>
     </div>
   );
