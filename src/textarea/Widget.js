@@ -14,6 +14,7 @@ import {
   SET_SUGGESTED_USERS,
   SET_SEARCH_STRING,
   SET_COMMENT_AND_RESET,
+  SET_SELECTED_USER,
 } from './reducer';
 
 const useCaretMetaInfo = (el) => {
@@ -60,6 +61,11 @@ export const Widget = (props) => {
     []
   );
 
+  const updateUser = useCallback(
+    (payload) => dispatch({ type: SET_SELECTED_USER, payload }),
+    []
+  );
+
   const filterUsers = useCallback(
     (query) => {
       let matchingUsers = info.allUsers;
@@ -82,6 +88,20 @@ export const Widget = (props) => {
     [ info.allUsers ]
   );
 
+  const handleUserClick = useCallback(
+    (user) => {
+      const value = textareaWidget.current.value;
+
+      const left = value.substr(0, caretPosition - info.search.length - 1);
+      const right = value.substr(caretPosition);
+      const payload = left + '@' + user.username + right;
+
+      saveCommentAndReset(payload);
+      textareaWidget.current.focus();
+    },
+    [ caretPosition, textareaWidget.current, info.search ]
+  );
+
   const handleKeyDown = useCallback(
     (e) => {
       const key = e.key;
@@ -101,8 +121,13 @@ export const Widget = (props) => {
       }
 
       if (!shiftKey && keyCode === 'Enter') {
-        onSaveComment(value);
-        saveCommentAndReset('');
+        if (info.showUsers) {
+          const user = info.suggestedUsers[info.selectedUserIndex];
+          handleUserClick(user);
+        } else {
+          onSaveComment(value);
+          saveCommentAndReset('');
+        }
         e.preventDefault();
         return;
       }
@@ -147,17 +172,31 @@ export const Widget = (props) => {
         return;
       }
 
-      if (
-        info.showUsers &&
-        (keyCode === 'ArrowDown' || keyCode === 'ArrowUp')
-      ) {
-        console.log(' HIJACK ARROW KEYS ::::::::: SHOWING MENTIONS');
+      if (info.showUsers && keyCode === 'ArrowUp') {
+        if (info.selectedUserIndex === 0) {
+          updateUser(info.suggestedUsers.length - 1);
+        }
+        if (info.selectedUserIndex > 0) {
+          updateUser(info.selectedUserIndex - 1);
+        }
+        e.preventDefault();
+        return;
+      }
+
+      if (info.showUsers && keyCode === 'ArrowDown') {
+        updateUser((info.selectedUserIndex + 1) % info.suggestedUsers.length);
         return;
       }
 
       return;
     },
-    [ info.showUsers, info.search, onSaveComment ]
+    [
+      info.search,
+      info.showUsers,
+      info.suggestedUsers,
+      info.selectedUserIndex,
+      onSaveComment,
+    ]
   );
 
   const handlePaste = useCallback((e) => {
@@ -187,23 +226,15 @@ export const Widget = (props) => {
         {info.suggestedUsers.length === 0 && <p>No matching user</p>}
 
         {info.suggestedUsers.map((user, idx) => {
+          const className = [
+            'ta__suggested_user',
+            idx === info.selectedUserIndex ? 'active' : '',
+          ].join(' ');
           return (
             <div
               key={idx}
-              className="ta__suggested_user"
-              onClick={() => {
-                const currentValue = textareaWidget.current.value;
-
-                const left = currentValue.substr(
-                  0,
-                  caretPosition - info.search.length - 1
-                );
-                const right = currentValue.substr(caretPosition);
-                const payload = left + '@' + user.username + right;
-
-                saveCommentAndReset(payload);
-                textareaWidget.current.focus();
-              }}
+              className={className}
+              onClick={() => handleUserClick(user)}
             >
               {user.name} ({user.username})
             </div>
@@ -222,7 +253,6 @@ export const Widget = (props) => {
         value={info.comment}
         rows={10}
         onChange={(e) => {
-          console.log('Trusted', e);
           dispatch({ type: SET_COMMENT, payload: e.target.value });
         }}
       />

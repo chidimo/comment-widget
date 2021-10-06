@@ -4,6 +4,7 @@ export const SET_SUGGESTED_USERS = 'SET_SUGGESTED_USERS';
 export const TOGGLE_SUGGESTIONS = 'TOGGLE_SUGGESTIONS';
 export const SET_SEARCH_STRING = 'SET_SEARCH_STRING';
 export const SET_COMMENT_AND_RESET = 'SET_COMMENT_AND_RESET';
+export const SET_SELECTED_USER = 'SET_SELECTED_USER';
 
 export const initTEState = {
   search: '',
@@ -11,6 +12,7 @@ export const initTEState = {
   suggestedUsers: [],
   allUsers: [],
   showUsers: false,
+  selectedUserIndex: 0,
 };
 
 export const CEReducer = (state = initTEState, action) => {
@@ -29,6 +31,8 @@ export const CEReducer = (state = initTEState, action) => {
       return { ...state, suggestedUsers: action.payload };
     case TOGGLE_SUGGESTIONS:
       return { ...state, showUsers: action.payload };
+    case SET_SELECTED_USER:
+      return { ...state, selectedUserIndex: action.payload };
     case SET_COMMENT_AND_RESET:
       return {
         ...state,

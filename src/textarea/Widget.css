@@ -15,7 +15,6 @@
   position: absolute;
   max-height: 200px;
   overflow: scroll;
-  padding: 5px;
   background: whitesmoke;
   border-radius: 5px;
   box-shadow: rgba(0, 0, 0, 0.4) 0px 1px 4px;
@@ -24,7 +23,11 @@
 .ta__suggested_user {
   padding: 5px;
   cursor: pointer;
-  color: blue;
+  color: mediumblue;
+}
+
+.ta__suggested_user.active {
+  background-color: #ccc;
 }
 
 a.suggest {
