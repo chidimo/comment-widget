@@ -3,8 +3,8 @@
 ## How to run this project
 
 1. Make sure you have `Node.js` and `npm` installed.
-1. `cd` into the app folder
-1. To install the project dependencies, run
+1. `cd` into the app folder on a terminal.
+1. Install the project dependencies by running the command
 
         yarn
 
@@ -13,7 +13,7 @@
         yarn start
 
 1. Once the project is up and running, visit <http://localhost:3000> to view the project.
-1. On the homepage, click on the link `Textarea Widget` to view the comment box in action.
+1. On the homepage, click on the link [Textarea Widget](http://localhost:3000/textarea-widget) link to view the comment box in action.
 
 ## How to run tests
 
@@ -23,13 +23,18 @@
 
 ## How to use the comment widget
 
-1. The comment widget is a React component that takes two required `props`: `onSaveComment` and `userList`.
+1. The comment widget is a React component that takes three required `props`: `onSaveComment`, `userList`, and `user_href_key`.
 1. `userList` is the list of possible users that can be referenced in a comment.
-1. `onSaveComment` is a function that receives the parsed comment as it's only argument.
+1. `onSaveComment` is a function that receives the parsed comment as it's only argument. You may then do whatever you like with the comment.
+1. `user_href_key` is used to get the `href` attribute of the referenced user link. Refrenced users in a comment are parsed into `<a>` tags with `href` pointing to a link which is extracted with the `user_href_key`.
 
-## Note on usernames
+## Note on `username`s
 
-1. `username`s can only contain `a-z`, `A-Z`, `0-9`, `_`, `-`
+1. `username`s can only contain `a-z`, `A-Z`, `0-9`, and `_`
+
+## Browser notes
+
+1. The `caret-pos` library relies on the [Selection API](https://developer.mozilla.org/en-US/docs/Web/API/Selection) which currently has over 80% support on modern browsers. See <https://caniuse.com/?search=selection>
 
 ## Resources
 
