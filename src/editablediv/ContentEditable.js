@@ -30,8 +30,8 @@ const useCaretData = (el) => getCaretMeta(el);
 const keyCodes = ['keyA', 'keyB'];
 
 const atMatcher = /(\s|&nbsp;|^)@/gm;
-const regex = /(\s|\n|&nbsp;)@([a-zA-Z0-9_-]+)(\s|&nbsp;|)/m;
-const pattern = /(\s|\n|&nbsp;)@([a-zA-Z0-9_-])+/im;
+const regex = /(\s|\n|&nbsp;)@([a-zA-Z0-9_]+)(\s|&nbsp;|)/m;
+const pattern = /(\s|\n|&nbsp;)@([a-zA-Z0-9_])+/im;
 
 export const ContentEditable = () => {
   const editDiv = useRef();

@@ -4,17 +4,18 @@ import { useRef, useEffect, useCallback } from 'react';
 
 import { parseMentions } from '../utils/processComment';
 import { useLoggingReducer } from '../utils/useLoggingReducer';
+import { forwardTypingRegex, backspaceCheckRegex, alphaNumRegex } from '../utils/patterns';
 
 import {
   CEReducer,
   initTEState,
-  INITIALIZE_USERS,
   SET_COMMENT,
+  INITIALIZE_USERS,
+  SET_SELECTED_USER,
+  SET_SEARCH_STRING,
   TOGGLE_SUGGESTIONS,
   SET_SUGGESTED_USERS,
-  SET_SEARCH_STRING,
   SET_COMMENT_AND_RESET,
-  SET_SELECTED_USER,
 } from './reducer';
 import './Widget.css';
 
@@ -27,9 +28,6 @@ const useCaretMetaInfo = (el) => {
 
 // eslint-disable-next-line no-undef
 const ENV = process.env.NODE_ENV;
-const forwardRegex = /(\s|\n|^)@/;
-const alphaNumRegex = /[a-zA-Z0-9_-]{1}/;
-const backwardRegex = /(\s|\n|^)(@)([a-zA-Z0-9_-])+$/g;
 
 export const Widget = (props) => {
   const { onSaveComment, userList, user_href_key } = props;
@@ -151,7 +149,7 @@ export const Widget = (props) => {
       }
 
       if ((shiftKey && keyCode === 'Digit2') || key === '@') {
-        const matched = (value + key).match(forwardRegex);
+        const matched = (value + key).match(forwardTypingRegex);
 
         if (matched) {
           showSuggestionBox();
@@ -173,7 +171,7 @@ export const Widget = (props) => {
           }
         } else {
           const matchString = value.substr(0, caretPosition - 1);
-          const matched = matchString.match(backwardRegex);
+          const matched = matchString.match(backspaceCheckRegex);
 
           if (matched) {
             const splitMatch = matched[0].split('@');
@@ -220,7 +218,9 @@ export const Widget = (props) => {
   );
 
   const handleSave = useCallback(() => {
-    onSaveComment(parseMentions(textareaWidget.current.value, info.allUsers, user_href_key));
+    onSaveComment(
+      parseMentions(textareaWidget.current.value, info.allUsers, user_href_key)
+    );
     saveCommentAndReset('');
   }, [
     onSaveComment,

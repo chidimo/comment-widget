@@ -1,3 +1,5 @@
+import { usernameReplacementRegex } from './patterns';
+
 const getUserFromList = (username, users) => {
   const user = users.find((u) => u.username === username);
   if (!user) {
@@ -6,10 +8,8 @@ const getUserFromList = (username, users) => {
   return user;
 };
 
-const pattern = /@([a-zA-Z0-9_-]+)/g;
-
 export const parseMentions = (comment, users, user_href_key) => {
-  const usersInComment = [ ...comment.matchAll(pattern) ];
+  const usersInComment = [ ...comment.matchAll(usernameReplacementRegex) ];
   const referencedUsers = usersInComment.map((refUser) => refUser[1]);
 
   referencedUsers.forEach((refUser) => {
