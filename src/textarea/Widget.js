@@ -4,7 +4,11 @@ import { useRef, useEffect, useCallback } from 'react';
 
 import { parseMentions } from '../utils/processComment';
 import { useLoggingReducer } from '../utils/useLoggingReducer';
-import { forwardTypingRegex, backspaceCheckRegex, alphaNumRegex } from '../utils/patterns';
+import {
+  forwardTypingRegex,
+  backspaceCheckRegex,
+  alphaNumRegex,
+} from '../utils/patterns';
 
 import {
   CEReducer,
@@ -118,6 +122,18 @@ export const Widget = (props) => {
     [ caretPosition, textareaWidget.current, info.search ]
   );
 
+  const handleSave = useCallback(() => {
+    onSaveComment(
+      parseMentions(textareaWidget.current.value, info.allUsers, user_href_key)
+    );
+    saveCommentAndReset('');
+  }, [
+    onSaveComment,
+    saveCommentAndReset,
+    info.allUsers,
+    textareaWidget.current,
+  ]);
+
   const handleKeyDown = useCallback(
     (e) => {
       const key = e.key;
@@ -216,18 +232,6 @@ export const Widget = (props) => {
       onSaveComment,
     ]
   );
-
-  const handleSave = useCallback(() => {
-    onSaveComment(
-      parseMentions(textareaWidget.current.value, info.allUsers, user_href_key)
-    );
-    saveCommentAndReset('');
-  }, [
-    onSaveComment,
-    saveCommentAndReset,
-    info.allUsers,
-    textareaWidget.current,
-  ]);
 
   useEffect(() => {
     dispatch({ type: INITIALIZE_USERS, payload: userList });
