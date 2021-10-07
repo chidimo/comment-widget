@@ -1,5 +1,7 @@
 # Comment widget
 
+A `GitHub` style comment box.
+
 ## How to run this project
 
 1. Make sure you have `Node.js` (version 12) and `npm` installed.
@@ -38,7 +40,11 @@
 
 ## Browser notes
 
-1. The `caret-pos` library relies on the [Selection API](https://developer.mozilla.org/en-US/docs/Web/API/Selection) which currently has over 80% support on modern browsers. See <https://caniuse.com/?search=selection>
+1. The [caret-pos](https://github.com/deshiknaves/caret-pos) library relies on the [Selection API](https://developer.mozilla.org/en-US/docs/Web/API/Selection) which currently has over 80% support on modern browsers. See <https://caniuse.com/?search=selection>
+
+## Notes on my attempt to implement the comment box with an editable div
+
+I initially made an attempt to implement the widget with an editable `div`. My intent was to build a [Slack](https://slack.com)-like comment box, where referenced users in the comment box itself are rendered as `<a>` tags. I had limited success. The major obstacle I experienced was related to finding and positioning the caret. But I intend to give it another try using the [caret-pos](https://github.com/deshiknaves/caret-pos) library.
 
 ## Resources
 
