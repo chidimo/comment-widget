@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 
-import './TextAreaWidget.css';
+import './TextAreaWidget.scss';
 
 import { Widget } from './Widget';
 import { getUsers } from '../utils/actions';

@@ -17,7 +17,7 @@ import {
   SET_SUGGESTED_USERS,
   SET_COMMENT_AND_RESET,
 } from './reducer';
-import './Widget.css';
+import './Widget.scss';
 
 const useCaretMetaInfo = (el) => {
   if (!el) {

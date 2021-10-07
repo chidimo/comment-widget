@@ -1,7 +1,7 @@
 .ta__widget_container {
-  position: relative;
   width: 80%;
   margin: auto;
+  position: relative;
 }
 
 .ta__comment_box {
@@ -33,15 +33,15 @@ label#textareaWidgetLabel {
   padding: 5px;
   cursor: pointer;
   color: mediumblue;
-}
 
-.ta__suggested_user.active {
-  background-color: #ccc;
+  &.active {
+    background-color: #ccc;
+  }
 }
 
 a.suggest {
-  text-decoration: none;
   cursor: pointer;
+  text-decoration: none;
 }
 
 button {

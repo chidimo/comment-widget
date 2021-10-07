@@ -1,9 +1,9 @@
 .ta__comments_app {
   height: calc(100vh - 20px);
   display: flex;
+  padding: 10px 15px;
   flex-direction: column;
   justify-content: space-between;
-  padding: 10px 15px;
 }
 
 .ta__comments_viewer {
@@ -24,17 +24,20 @@
   border: 1px solid grey;
   border-radius: 7px;
   margin-bottom: 5px;
-}
 
-.ta__single_comment .username {
-  margin-top: 0;
+  a {
+    text-decoration: none;
+  }
 
-}
+  p {
+    font-weight: bold;
+  }
 
-.ta__single_comment p {
-  font-weight: bold;
-}
+  .username {
+    margin-top: 0;
+  }
 
-.ta__single_comment:not(:last-of-type) {
+  &:not(:last-of-type) {
   border-bottom: 1px solid gray;
+}
 }
