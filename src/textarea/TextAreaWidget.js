@@ -38,7 +38,11 @@ export const TextAreaWidget = () => {
         </div>
       </div>
 
-      <Widget userList={userList} onSaveComment={onSaveComment} />
+      <Widget
+        userList={userList}
+        onSaveComment={onSaveComment}
+        user_href_key="avatar_url"
+      />
     </div>
   );
 };

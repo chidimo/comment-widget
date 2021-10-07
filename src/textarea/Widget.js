@@ -32,7 +32,7 @@ const alphaNumRegex = /[a-zA-Z0-9_-]{1}/;
 const backwardRegex = /(\s|\n|^)(@)([a-zA-Z0-9_-])+$/g;
 
 export const Widget = (props) => {
-  const { onSaveComment, userList } = props;
+  const { onSaveComment, userList, user_href_key } = props;
 
   const textareaWidget = useRef();
 
@@ -220,7 +220,7 @@ export const Widget = (props) => {
   );
 
   const handleSave = useCallback(() => {
-    onSaveComment(parseMentions(textareaWidget.current.value, info.allUsers));
+    onSaveComment(parseMentions(textareaWidget.current.value, info.allUsers, user_href_key));
     saveCommentAndReset('');
   }, [
     onSaveComment,
@@ -296,4 +296,5 @@ export const Widget = (props) => {
 Widget.propTypes = {
   onSaveComment: PropTypes.func.isRequired,
   userList: PropTypes.array.isRequired,
+  user_href_key: PropTypes.string.isRequired,
 };

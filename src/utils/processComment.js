@@ -8,7 +8,7 @@ const getUserFromList = (username, users) => {
 
 const pattern = /@([a-zA-Z0-9_-]+)/g;
 
-export const parseMentions = (comment, users) => {
+export const parseMentions = (comment, users, user_href_key) => {
   const usersInComment = [ ...comment.matchAll(pattern) ];
   const referencedUsers = usersInComment.map((refUser) => refUser[1]);
 
@@ -17,7 +17,7 @@ export const parseMentions = (comment, users) => {
     if (userObject) {
       comment = comment.replace(
         `@${userObject.username}`,
-        `<a href="${userObject.avatar_url}">@${userObject.username}</a>`
+        `<a href="${userObject[user_href_key]}">@${userObject.username}</a>`
       );
     }
   });
