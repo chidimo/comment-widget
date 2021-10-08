@@ -20,6 +20,9 @@ A `GitHub` style comment box.
 
 1. Once the project is up and running, visit <http://localhost:3000> to view the project.
 1. On the homepage, click on the link [Textarea Widget](http://localhost:3000/textarea-widget) to view the comment box in action.
+1. To reference a user, simply type `@` to bring up the suggestion box. Once the box is out, you can continue typing to filter the list of users. See the picture below.
+
+![Screenshot](./src/screenshots/graphic.png)
 
 ## How to run tests
 
@@ -51,4 +54,6 @@ I initially made an attempt to implement the widget with an editable `div`. My i
 1. <https://javascript.plainenglish.io/how-to-find-the-caret-inside-a-contenteditable-element-955a5ad9bf81>
 1. <https://blog.campvanilla.com/reactjs-input-trigger-github-twitter-mentions-8ad1d878110d>
 1. <https://awik.io/check-if-element-is-inside-viewport-with-javascript/>
+1. <https://www.miguoliang.com/how-to-set-caret-to-the-end-of-line-in-a-contenteditable-element.html>
+1. <https://gist.github.com/isLishude/6ccd1fbf42d1eaac667d6873e7b134f8>
 1. <https://www.miguoliang.com/how-to-set-caret-to-the-end-of-line-in-a-contenteditable-element.html>
