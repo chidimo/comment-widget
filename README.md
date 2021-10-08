@@ -2,6 +2,8 @@
 
 A `GitHub` style comment box.
 
+See it in action here <https://github-comment-box.netlify.app/textarea-widget>
+
 ## How to run this project
 
 1. Make sure you have `Node.js` (version 12) and `npm` installed.
