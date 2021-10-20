@@ -51,6 +51,10 @@ See it in action here <https://github-comment-box.netlify.app/textarea-widget>
 
 I initially made an attempt to implement the widget with an editable `div`. My intent was to build a [Slack](https://slack.com)-like comment box, where referenced users in the comment box itself are rendered as `<a>` tags. I had limited success. The major obstacle I experienced was related to finding and positioning the caret. But I intend to give it another try using the [caret-pos](https://github.com/deshiknaves/caret-pos) library.
 
+## TODO
+
+1. Mock out `dompurify` for tests.
+
 ## Resources
 
 1. <https://javascript.plainenglish.io/how-to-find-the-caret-inside-a-contenteditable-element-955a5ad9bf81>
