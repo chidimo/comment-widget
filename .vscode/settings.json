@@ -1,0 +1,26 @@
+{
+  "files.autoSave": "afterDelay",
+  "files.eol": "\n",
+  "editor.fontSize": 14,
+  "jest.pathToJest": "yarn test",
+  "editor.tokenColorCustomizations": {
+    "textMateRules": [
+      {
+        "scope": [""],
+        "settings": {
+          "fontStyle": "italic"
+        }
+      }
+    ]
+  },
+  "workbench.iconTheme": "vscode-icons",
+  "workbench.preferredDarkColorTheme": "Visual Studio Dark",
+  "workbench.colorTheme": "Material Theme Ocean High Contrast",
+  "workbench.colorCustomizations": {
+    "titleBar.activeBackground": "#000"
+  },
+  "liveServer.settings.port": 5501,
+  "[javascript]": {
+    "editor.autoClosingBrackets": "languageDefined"
+  }
+}
